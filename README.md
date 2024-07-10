@@ -1,6 +1,8 @@
 **Overview**
 
 - Intro
+- Technologies
+- Techniques
 - Video
 - Final Thoughts
 
