@@ -6,7 +6,7 @@
 
 **Intro**
 
-This project was created to set up an api server for the "WTWR" app.
+This project was created to set up an api server for the "WTWR" app. The server will function to store the users data, as well as any clothing items uploaded to the users collection.
 
 **Technologies**
 
