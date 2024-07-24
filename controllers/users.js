@@ -1,60 +1,120 @@
+const bcrypt = require("bcryptjs");
 const User = require("../models/users");
 const { ERROR_CODES, ERROR_MESSAGES } = require("../utils/errors");
+const { JWT_SECRET } = require("../utils/config");
+const jwt = require("jsonwebtoken");
 
-const getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.status(200).send(users))
-    .catch((err) => {
-      console.error(err);
-      return res
-        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
-    });
-};
+const getCurrentUser = (req, res) => {
+  const userId = req.user._id;
 
-const getUser = (req, res) => {
-  const { userId } = req.params;
   User.findById(userId)
-    .orFail()
-    .then((user) => res.status(200).send(user))
-    .catch((err) => {
-      console.error(err);
-      if (err.name === "DocumentNotFoundError") {
+    .then((user) => {
+      if (!user) {
         return res
           .status(ERROR_CODES.NOT_FOUND)
           .send({ message: ERROR_MESSAGES.NOT_FOUND });
       }
-      if (err.name === "CastError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: ERROR_MESSAGES.BAD_REQUEST });
-      }
-      return res
+      res.status(200).send(user);
+    })
+    .catch((err) => {
+      res
         .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
         .send({ message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
     });
 };
 
-const createUser = (req, res) => {
-  const { name, avatar } = req.body;
+const createUser = async (req, res) => {
+  const { name, avatar, email, password } = req.body;
 
-  User.create({ name, avatar })
-    .then((user) => res.status(201).send(user))
-    .catch((err) => {
-      console.error(err);
-      if (err.name === "ValidationError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: ERROR_MESSAGES.BAD_REQUEST });
-      }
+  try {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
       return res
-        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+        .status(ERROR_CODES.CONFLICT)
+        .send({ message: ERROR_MESSAGES.CONFLICT });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      name,
+      avatar,
+      email,
+      password: hashedPassword,
     });
+
+    return res.status(201).send(user);
+  } catch (err) {
+    console.error(err);
+    if (err.name === "ValidationError") {
+      return res
+        .status(ERROR_CODES.BAD_REQUEST)
+        .send({ message: ERROR_MESSAGES.BAD_REQUEST });
+    }
+    if (err.code === 11000) {
+      return res
+        .status(ERROR_CODES.CONFLICT)
+        .send({ message: ERROR_MESSAGES.CONFLICT });
+    }
+    return res
+      .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
+      .send({ message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+  }
+};
+
+const login = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findUserByCredentials(email, password);
+
+    const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: "7d" });
+
+    return res.status(200).send({ token });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(ERROR_CODES.UNAUTHORIZED)
+      .send({ message: ERROR_MESSAGES.UNAUTHORIZED });
+  }
+};
+
+const updateUser = async (req, res) => {
+  const { name, avatar } = req.body;
+  const userId = req.user._id;
+
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { name, avatar },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
+      return res
+        .status(ERROR_CODES.NOT_FOUND)
+        .send({ message: ERROR_MESSAGES.NOT_FOUND });
+    }
+
+    res.send(updatedUser);
+  } catch (err) {
+    console.error(err);
+    if (err.name === "ValidationError") {
+      return res
+        .status(ERROR_CODES.BAD_REQUEST)
+        .send({ message: ERROR_MESSAGES.BAD_REQUEST });
+    }
+    res
+      .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
+      .send({ message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+  }
 };
 
 module.exports = {
   getUsers,
   getUser,
   createUser,
+  login,
+  getCurrentUser,
+  updateUser,
 };

@@ -12,7 +12,7 @@ This project was created to set up an api server for the "WTWR" app. The server 
 
 **Technologies**
 
-The server is set up using _Express_, _MongoDB_, and _Mongoose_. _ESLint_ was used to integrate neccessary extensions. _Postman_ and _Github Actions_ were used to test the api server responses and endpoints.
+The server is set up using _Express_, _MongoDB_, and _Mongoose_. _ESLint_ was used to integrate neccessary extensions. _Postman_ and _Github Actions_ were used to test the api server responses and endpoints. User security added through authorization middleware to secure the server.
 
 **Techniques**
 
@@ -29,6 +29,8 @@ _API Testing_: Using postman and to test the api endpoints.
 _Automated Testing_: I used automated testing by using github actions.
 
 _Data Management_: I used Mongoose Compass to create and manage data within my database.
+
+_Server Security_: I created middleware for authorizatoin purposes and applied it to specific routes to secure user data.
 
 **Video**
 
