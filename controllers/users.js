@@ -14,10 +14,11 @@ const getCurrentUser = (req, res) => {
           .status(ERROR_CODES.NOT_FOUND)
           .send({ message: ERROR_MESSAGES.NOT_FOUND });
       }
-      res.status(200).send(user);
+      return res.status(200).send(user);
     })
     .catch((err) => {
-      res
+      console.error(err);
+      return res
         .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
         .send({ message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
     });
@@ -96,7 +97,7 @@ const updateUser = async (req, res) => {
         .send({ message: ERROR_MESSAGES.NOT_FOUND });
     }
 
-    res.send(updatedUser);
+    return res.send(updatedUser);
   } catch (err) {
     console.error(err);
     if (err.name === "ValidationError") {

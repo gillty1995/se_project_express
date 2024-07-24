@@ -44,7 +44,7 @@ const deleteItem = (req, res) => {
           .status(ERROR_CODES.FORBIDDEN)
           .send({ message: ERROR_MESSAGES.FORBIDDEN });
       }
-      res
+      return res
         .status(200)
         .send({ data: deletedItem, message: "Item successfully deleted" });
     })
