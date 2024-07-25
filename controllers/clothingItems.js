@@ -41,8 +41,8 @@ const deleteItem = (req, res) => {
     .then((deletedItem) => {
       if (!deletedItem) {
         return res
-          .status(ERROR_CODES.FORBIDDEN)
-          .send({ message: ERROR_MESSAGES.FORBIDDEN });
+          .status(ERROR_CODES.NOT_FOUND)
+          .send({ message: ERROR_MESSAGES.NOT_FOUND });
       }
       return res
         .status(200)

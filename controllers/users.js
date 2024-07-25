@@ -44,7 +44,9 @@ const createUser = async (req, res) => {
       password: hashedPassword,
     });
 
-    return res.status(201).send(user);
+    const { password: _, ...userInfo } = user.toObject();
+
+    return res.status(201).send(userInfo);
   } catch (err) {
     console.error(err);
     if (err.name === "ValidationError") {
@@ -65,6 +67,12 @@ const createUser = async (req, res) => {
 
 const login = async (req, res) => {
   const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res
+      .status(ERROR_CODES.BAD_REQUEST)
+      .send({ message: ERROR_MESSAGES.BAD_REQUEST });
+  }
 
   try {
     const user = await User.findUserByCredentials(email, password);
