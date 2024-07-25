@@ -14,7 +14,7 @@ const getCurrentUser = (req, res) => {
           .status(ERROR_CODES.NOT_FOUND)
           .send({ message: ERROR_MESSAGES.NOT_FOUND });
       }
-      return res.status(200).send(user);
+      return res.send(user);
     })
     .catch((err) => {
       console.error(err);
@@ -28,13 +28,6 @@ const createUser = async (req, res) => {
   const { name, avatar, email, password } = req.body;
 
   try {
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res
-        .status(ERROR_CODES.CONFLICT)
-        .send({ message: ERROR_MESSAGES.CONFLICT });
-    }
-
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
@@ -82,9 +75,15 @@ const login = async (req, res) => {
     return res.status(200).send({ token });
   } catch (err) {
     console.error(err);
+    if (err.message === "Invalid email or password") {
+      return res
+        .status(ERROR_CODES.UNAUTHORIZED)
+        .send({ message: ERROR_MESSAGES.UNAUTHORIZED });
+    }
+
     return res
-      .status(ERROR_CODES.UNAUTHORIZED)
-      .send({ message: ERROR_MESSAGES.UNAUTHORIZED });
+      .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
+      .send({ message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
   }
 };
 
