@@ -37,7 +37,20 @@ const deleteItem = (req, res) => {
   const { itemId } = req.params;
   const userId = req.user._id;
 
-  ClothingItem.findOneAndDelete({ _id: itemId, owner: userId })
+  ClothingItem.findOne({ _id: itemId })
+    .then((item) => {
+      if (!item) {
+        return res
+          .status(ERROR_CODES.NOT_FOUND)
+          .send({ message: ERROR_MESSAGES.NOT_FOUND });
+      }
+      if (item.owner.toString() !== userId.toString()) {
+        return res
+          .status(ERROR_CODES.FORBIDDEN)
+          .send({ message: ERROR_MESSAGES.FORBIDDEN });
+      }
+      return ClothingItem.findByIdAndDelete(itemId);
+    })
     .then((deletedItem) => {
       if (!deletedItem) {
         return res
@@ -50,11 +63,6 @@ const deleteItem = (req, res) => {
     })
     .catch((err) => {
       console.error(err);
-      if (err.name === "DocumentNotFoundError") {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: ERROR_MESSAGES.NOT_FOUND });
-      }
       if (err.name === "CastError") {
         return res
           .status(ERROR_CODES.BAD_REQUEST)
