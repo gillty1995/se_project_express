@@ -1,39 +1,14 @@
-class CustomError extends Error {
-  constructor(statusCode, message) {
-    super(message);
-    this.statusCode = statusCode;
-  }
-}
+const createError = (statusCode, message) => ({
+  statusCode,
+  message,
+});
 
-class BadRequestError extends CustomError {
-  constructor(message = "Bad Request") {
-    super(400, message);
-  }
-}
-
-class UnauthorizedError extends CustomError {
-  constructor(message = "Unauthorized") {
-    super(401, message);
-  }
-}
-
-class ForbiddenError extends CustomError {
-  constructor(message = "Forbidden") {
-    super(403, message);
-  }
-}
-
-class NotFoundError extends CustomError {
-  constructor(message = "Not Found") {
-    super(404, message);
-  }
-}
-
-class ConflictError extends CustomError {
-  constructor(message = "Conflict") {
-    super(409, message);
-  }
-}
+const BadRequestError = (message = "Bad Request") => createError(400, message);
+const UnauthorizedError = (message = "Unauthorized") =>
+  createError(401, message);
+const ForbiddenError = (message = "Forbidden") => createError(403, message);
+const NotFoundError = (message = "Not Found") => createError(404, message);
+const ConflictError = (message = "Conflict") => createError(409, message);
 
 module.exports = {
   BadRequestError,

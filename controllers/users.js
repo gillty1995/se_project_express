@@ -37,7 +37,7 @@ const createUser = async (req, res, next) => {
       password: hashedPassword,
     });
 
-    const { password: _, ...userInfo } = user.toObject();
+    const { password: _password, ...userInfo } = user.toObject();
 
     return res.status(201).send(userInfo);
   } catch (err) {
