@@ -1,18 +1,18 @@
 const ClothingItem = require("../models/clothingItems");
-const { ERROR_CODES, ERROR_MESSAGES } = require("../utils/errors");
 
-const getItems = (req, res) => {
+const {
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
+} = require("../utils/customErrors");
+
+const getItems = (req, res, next) => {
   ClothingItem.find({})
     .then((items) => res.status(200).send(items))
-    .catch((err) => {
-      console.error(err);
-      return res
-        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
-    });
+    .catch((err) => next(err));
 };
 
-const createItem = (req, res) => {
+const createItem = (req, res, next) => {
   console.log(req.body);
 
   const { name, weather, imageUrl } = req.body;
@@ -23,59 +23,42 @@ const createItem = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: ERROR_MESSAGES.BAD_REQUEST });
+        return next(new BadRequestError("Invalid data provided."));
       }
-      return res
-        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+      return next(err);
     });
 };
 
-const deleteItem = (req, res) => {
+const deleteItem = (req, res, next) => {
   const { itemId } = req.params;
   const userId = req.user._id;
 
   ClothingItem.findById(itemId)
     .then((item) => {
       if (!item) {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: ERROR_MESSAGES.NOT_FOUND });
+        return next(new NotFoundError("Data not found."));
       }
 
       if (item.owner.toString() !== userId.toString()) {
-        return res
-          .status(ERROR_CODES.FORBIDDEN)
-          .send({ message: ERROR_MESSAGES.FORBIDDEN });
+        return next(new ForbiddenError("This action is forbidden."));
       }
       return item
         .remove()
         .then(() =>
           res.status(200).send({ message: "Item successfully deleted" })
         )
-        .catch((err) => {
-          console.error(err);
-          return res
-            .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-            .send({ message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
-        });
+        .catch((err) => next(err));
     })
     .catch((err) => {
       console.error(err);
       if (err.name === "CastError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: ERROR_MESSAGES.BAD_REQUEST });
+        return next(new BadRequestError("Invalid data provided."));
       }
-      return res
-        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+      return next(err);
     });
 };
 
-const likeItem = (req, res) => {
+const likeItem = (req, res, next) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $addToSet: { likes: req.user._id } },
@@ -83,26 +66,20 @@ const likeItem = (req, res) => {
   )
     .then((updatedItem) => {
       if (!updatedItem) {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: ERROR_MESSAGES.NOT_FOUND });
+        return next(new NotFoundError("Data not found."));
       }
       return res.json(updatedItem);
     })
     .catch((err) => {
       console.error(err);
       if (err.name === "CastError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: ERROR_MESSAGES.BAD_REQUEST });
+        return next(new BadRequestError("Invalid data provided."));
       }
-      return res
-        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+      return next(err);
     });
 };
 
-const dislikeItem = (req, res) => {
+const dislikeItem = (req, res, next) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $pull: { likes: req.user._id } },
@@ -110,22 +87,16 @@ const dislikeItem = (req, res) => {
   )
     .then((updatedItem) => {
       if (!updatedItem) {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: ERROR_MESSAGES.NOT_FOUND });
+        return next(new NotFoundError("Data not found."));
       }
       return res.json(updatedItem);
     })
     .catch((err) => {
       console.error(err);
       if (err.name === "CastError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: ERROR_MESSAGES.BAD_REQUEST });
+        return next(new BadRequestError("Invalid data provided."));
       }
-      return res
-        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+      return next(err);
     });
 };
 
