@@ -1,10 +1,15 @@
 **Overview**
 
+- Link
 - Intro
 - Technologies
 - Techniques
 - Video
 - Final Thoughts
+
+**Link**
+
+Link to live site: https://wtwr.fr.to/
 
 **Intro**
 
@@ -34,7 +39,7 @@ _Server Security_: I created middleware for authorizatoin purposes and applied i
 
 **Video**
 
-- (Video demonstration of project): To be added...
+Video demonstration of project: To be added...
 
 **Final Thoughts**
 
