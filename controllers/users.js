@@ -36,6 +36,7 @@ const createUser = async (req, res, next) => {
       password: hashedPassword,
     });
 
+    // eslint-disable-next-line no-unused-vars
     const { password: _, ...userInfo } = user.toObject();
 
     return res.status(201).send(userInfo);
