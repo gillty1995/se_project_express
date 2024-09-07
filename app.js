@@ -7,6 +7,8 @@ const { errors } = require("celebrate");
 const indexRouter = require("./routes/index");
 const errorHandler = require("./middlewares/error-handler");
 const { requestLogger, errorLogger } = require("./middlewares/loggers");
+const apiLimiter = require("./middlewares/rateLimiter");
+const securityMiddleware = require("./middlewares/security");
 
 const app = express();
 const { PORT = 3001 } = process.env;
@@ -17,6 +19,10 @@ mongoose
     console.log("Connect to DB");
   })
   .catch(console.error);
+
+app.use(apiLimiter);
+
+app.use(securityMiddleware);
 
 // for sprint 15
 app.get("/crash-test", () => {
